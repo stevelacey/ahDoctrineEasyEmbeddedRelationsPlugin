@@ -27,22 +27,24 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
         if (($relation->isOneToOne() && !$this->getObject()->relatedExists($relationName)) || !$relation->isOneToOne())
         {
           $formLabel = isset($relationSettings['newFormLabel']) ? $relationSettings['newFormLabel'] : null;
-          if (!empty($relationSettings['multipleNewForms'])) { // allow multiple new forms for this relation
+          if (!empty($relationSettings['multipleNewForms'])) // allow multiple new forms for this relation
+          {
 
             $newFormsCount = !empty($relationSettings['newFormsInitialCount']) ? $relationSettings['newFormsInitialCount'] : 1;
 
             $subForm = new sfForm();
             unset($subForm[sfForm::$CSRFFieldName]);
-            for ($i = 0; $i < $newFormsCount; $i++) {
-              // we need to create new forms with cloned object inside (otherwise only the laast new values would be saved)
+            for ($i = 0; $i < $newFormsCount; $i++)
+            {
+              // we need to create new forms with cloned object inside (otherwise only the last new values would be saved)
               $newForm = $this->embeddedFormFactory($relationName, $relationSettings, $relation, $i + 1);
               $subForm->embedForm($i, $newForm);
             }
             $subForm->getWidgetSchema()->setLabel($formLabel);
             $this->embedForm('new_'.$relationName, $subForm);
-
-            //$this->embedFormForEach('new_'.$relationName, $newForm, $newFormsCount);
-          } else { // just a single new form for this relation
+          }
+          else // just a single new form for this relation
+          {
             $newForm = $this->embeddedFormFactory($relationName, $relationSettings, $relation, $formLabel);
             $this->embedForm('new_'.$relationName, $newForm);
           }
@@ -113,15 +115,22 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
       {
         $containerName = 'new_'.$relationName;
 
-        if (!empty($keys['multipleNewForms'])) { // allow multiple new forms for this relation
-          if (array_key_exists($containerName, $values)) {
-            foreach ($values[$containerName] as $index => $subFormValues) {
-              if ($this->isNewFormEmpty($subFormValues, $keys)) {
+        if (!empty($keys['multipleNewForms'])) // just a single new form for this relation
+        {
+          if (array_key_exists($containerName, $values))
+          {
+            foreach ($values[$containerName] as $index => $subFormValues)
+            {
+              if ($this->isNewFormEmpty($subFormValues, $keys))
+              {
                 unset($values[$containerName][$index], $this->embeddedForms[$containerName][$index]);
                 unset($this->validatorSchema[$containerName][$index]);
-              } else {
+              }
+              else
+              {
                 // if new forms were inserted client-side, embed them here
-                if (!isset($this->embeddedForms[$containerName][$index])) {
+                if (!isset($this->embeddedForms[$containerName][$index]))
+                {
                   // create and embed new form
                   $relation = $this->getObject()->getTable()->getRelation($relationName);
                   $addedForm = $this->embeddedFormFactory($relationName, $keys, $relation, ((int) $index) + 1);
@@ -139,23 +148,27 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
           $this->validatorSchema[$containerName] = $this->embeddedForms[$containerName]->getValidatorSchema();
 
           // check for new forms that were deleted client-side and never submitted
-          foreach (array_keys($this->embeddedForms[$containerName]->embeddedForms) as $index) {
-            if (!array_key_exists($index, $values[$containerName])) {
+          foreach (array_keys($this->embeddedForms[$containerName]->embeddedForms) as $index)
+          {
+            if (!array_key_exists($index, $values[$containerName]))
+            {
                 unset($this->embeddedForms[$containerName][$index]);
                 unset($this->validatorSchema[$containerName][$index]);
             }
           }
 
-          if (empty($values[$containerName])) { // all new forms were empty
-            unset($values[$containerName], $this[$containerName]);
-          }
-
-        } else {
-          if (!array_key_exists($containerName, $values) || $this->isNewFormEmpty($values[$containerName], $keys)) {
+          if (empty($values[$containerName])) // all new forms were empty
+          {
             unset($values[$containerName], $this[$containerName]);
           }
         }
-
+        else
+        {
+          if (!array_key_exists($containerName, $values) || $this->isNewFormEmpty($values[$containerName], $keys))
+          {
+            unset($values[$containerName], $this[$containerName]);
+          }
+        }
       }
 
       if (isset($values[$relationName]))
@@ -187,17 +200,21 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
         $relation = $this->getObject()->getTable()->getRelation($relationName);
         foreach ($ids as $index => $id)
         {
-          if ($relation->isOneToOne()) {
+          if ($relation->isOneToOne())
+          {
             unset($values[$relationName]);
           }
-          else {
+          else
+          {
             unset($values[$relationName][$index]);
           }
 
-          if (!$relation->isOneToOne()) {
+          if (!$relation->isOneToOne())
+          {
             unset($this->object[$relationName][$index]);
           }
-          else {
+          else
+          {
             $this->object->clearRelated($relationName);
           }
 
@@ -279,24 +296,28 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
    * @param array $keys settings for the embedded relation
    * @return bool
    */
-  protected function isNewFormEmpty(array $values, array $keys) {
-    if (!isset($keys['considerNewFormEmptyFields']) || count($keys['considerNewFormEmptyFields']) == 0 || !isset($values))
-        return false;
+  protected function isNewFormEmpty(array $values, array $keys)
+  {
+    if (!isset($keys['considerNewFormEmptyFields']) || count($keys['considerNewFormEmptyFields']) == 0 || !isset($values)) return false;
 
     $emptyFields = 0;
     foreach ($keys['considerNewFormEmptyFields'] as $key)
     {
-      if ('' === trim($values[$key])) {
+      if ('' === trim($values[$key]))
+      {
         $emptyFields++;
-      } elseif (is_array($values[$key]) && count($values[$key]) === 0) {
+      }
+      elseif (is_array($values[$key]) && count($values[$key]) === 0)
+      {
         $emptyFields++;
       }
     }
 
-    if ($emptyFields === count($keys['considerNewFormEmptyFields'])) {
+    if ($emptyFields === count($keys['considerNewFormEmptyFields']))
+    {
       return true;
-      //sfContext::getInstance()->getLogger()->info('Dropping relation :'.$relationName);
     }
+    
     return false;
   }
 
@@ -309,7 +330,8 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
    * @param string $formLabel
    * @return sfFormDoctrine
    */
-  private function embeddedFormFactory($relationName, array $relationSettings, Doctrine_Relation $relation, $formLabel = null) {
+  private function embeddedFormFactory($relationName, array $relationSettings, Doctrine_Relation $relation, $formLabel = null)
+  {
       $newFormObject = $this->embeddedFormObjectFactory($relationName, $relation);
       $formClass = !isset($relationSettings['newFormClass']) ? $relation->getClass().'Form' : $relationSettings['newFormClass'];
       $formArgs = !isset($relationSettings['newFormClassArgs']) ? array() : $relationSettings['newFormClassArgs'];
@@ -333,6 +355,7 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
       {
         $newForm->getWidgetSchema()->setLabel($formLabel);
       }
+      
       return $newForm;
   }
 
@@ -342,7 +365,8 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
    * @param Doctrine_Relation $relation
    * @return Doctrine_Record
    */
-  private function embeddedFormObjectFactory($relationName, Doctrine_Relation $relation) {
+  private function embeddedFormObjectFactory($relationName, Doctrine_Relation $relation)
+  {
     if (Doctrine_Relation::MANY === $relation->getType())
     {
       $newFormObjectClass = $relation->getClass();
@@ -352,7 +376,7 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
     {
       $newFormObject = $this->getObject()->$relationName;
     }
+    
     return $newFormObject;
   }
-
 }

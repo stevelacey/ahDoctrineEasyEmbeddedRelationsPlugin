@@ -184,7 +184,7 @@ Only the first option is required, the rest can be guessed using the schema and 
 
   * `multipleNewForms` (boolean, not required): set this option to true if you want to have multiple new related object forms
 
-  * `newFormsInitialCount`: (integer, 1 is default): number of new object forms initially displayed (you may insert/delete those forms dynamically using JavaScript, all submitted subforms will be processed and validated.)
+  * `newFormsInitialCount`: (integer, not required, default: 1): number of new object forms initially displayed (you may insert/delete those forms dynamically using JavaScript, all submitted subforms will be processed and validated.)
 
 ## Questions, bugs, feature requests? ##
 
