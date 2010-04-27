@@ -26,6 +26,7 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
       {
         if (($relation->isOneToOne() && !$this->getObject()->relatedExists($relationName)) || !$relation->isOneToOne())
         {
+          $formLabel = isset($relationSettings['newFormLabel']) ? $relationSettings['newFormLabel'] : null;
           if (!empty($relationSettings['multipleNewForms'])) { // allow multiple new forms for this relation
 
             $newFormsCount = !empty($relationSettings['newFormsInitialCount']) ? $relationSettings['newFormsInitialCount'] : 1;
@@ -37,11 +38,11 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
               $newForm = $this->embeddedFormFactory($relationName, $relationSettings, $relation, $i + 1);
               $subForm->embedForm($i, $newForm);
             }
+            $subForm->getWidgetSchema()->setLabel($formLabel);
             $this->embedForm('new_'.$relationName, $subForm);
 
             //$this->embedFormForEach('new_'.$relationName, $newForm, $newFormsCount);
           } else { // just a single new form for this relation
-            $formLabel = isset($relationSettings['newFormLabel']) ? $relationSettings['newFormLabel'] : null;
             $newForm = $this->embeddedFormFactory($relationName, $relationSettings, $relation, $formLabel);
             $this->embedForm('new_'.$relationName, $newForm);
           }
