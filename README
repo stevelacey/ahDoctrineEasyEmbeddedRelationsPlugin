@@ -186,6 +186,12 @@ Only the first option is required, the rest can be guessed using the schema and 
 
   * `newFormsInitialCount`: (integer, not required, default: 1): number of new object forms initially displayed (you may insert/delete those forms dynamically using JavaScript, all submitted subforms will be processed and validated.)
 
+  * `newFormsContainerForm`: (sfForm, not required): if not passed, plugin will create custom ahNewRelationsContainerForm form with a single `ahAddRelation` button below the new relation form(s)
+
+  * `newRelationButtonLabel`: (string, not required, default: '+'): label for the `ahAddRelation` new relation button. Used only when `newFormsContainerForm` is empty
+
+  * `newRelationAddByCloning`: (boolean, not required, default: true): Should the plugin add new relation forms by cloning them client-side (with JavaScript). Requires jQuery 1.3.x. If set to false, you should add the behaviour yourself to the `ahAddRelation` form button. This setting is used only when `newFormsContainerForm` is empty.
+
 ## Questions, bugs, feature requests? ##
 
 I can be reached via e-mail: info@asapdesign.de
