@@ -32,8 +32,19 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
 
             $newFormsCount = !empty($relationSettings['newFormsInitialCount']) ? $relationSettings['newFormsInitialCount'] : 1;
 
-            $subForm = new sfForm();
-            unset($subForm[sfForm::$CSRFFieldName]);
+            if (empty($relationSettings['newFormsContainerForm']))
+            {
+              if (empty($relationSettings['newRelationLabel'])) {
+                $relationSettings['newRelationLabel'] = '+';
+              }
+
+              $relationSettings['newFormsContainerForm'] = new ahNewRelationsContainerForm(
+                array('new_relation' => $relationSettings['newRelationLabel']),
+                array('containerName' => 'new_' . $relationName));
+            }
+
+            $subForm = $relationSettings['newFormsContainerForm'];
+            unset($subForm[$subForm->getCSRFFieldName()]);
             for ($i = 0; $i < $newFormsCount; $i++)
             {
               // we need to create new forms with cloned object inside (otherwise only the last new values would be saved)
@@ -317,7 +328,7 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
     {
       return true;
     }
-    
+
     return false;
   }
 
@@ -355,7 +366,7 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
       {
         $newForm->getWidgetSchema()->setLabel($formLabel);
       }
-      
+
       return $newForm;
   }
 
@@ -376,7 +387,7 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
     {
       $newFormObject = $this->getObject()->$relationName;
     }
-    
+
     return $newFormObject;
   }
 }
