@@ -10,6 +10,7 @@ class ahNewRelationField extends sfWidgetForm
   protected function configure($options = array(), $attributes = array())
   {
     $this->addRequiredOption('containerName');
+    $this->addOption('addJavascript', false);
   }
 
   public function render($name, $value = null, $attributes = array(), $errors = array())
@@ -19,7 +20,11 @@ class ahNewRelationField extends sfWidgetForm
 
   public function getJavaScripts()
   {
-   return array('/ahDoctrineEasyEmbeddedRelationsPlugin/js/jquery.ah.js');
+    if ($this->getOption('addJavascript'))
+    {
+      return array('/ahDoctrineEasyEmbeddedRelationsPlugin/js/jquery.ah.js');
+    }
+    return array();
   }
 
 }

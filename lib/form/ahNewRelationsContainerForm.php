@@ -12,14 +12,26 @@ class ahNewRelationsContainerForm extends sfForm
 
   public function configure()
   {
-    $this->setWidget('new_relation', new ahNewRelationField(array('containerName' => $this->getOption('containerName'))));
+    $button = new ahNewRelationField(array(
+        'containerName' => $this->getOption('containerName'),
+        'addJavascript' => $this->getOption('addByCloning'),
+    ));
+
+    $this->setWidget('_', $button);
   }
 
 
+  /**
+   * Moves button below embedded forms
+   * @inheritdoc
+   * @param string $name
+   * @param sfForm $form
+   * @param string $decorator
+   */
   public function embedForm($name, sfForm $form, $decorator = null)
   {
     parent::embedForm($name, $form, $decorator);
-    $this->widgetSchema->moveField('new_relation', sfWidgetFormSchema::LAST);
+    $this->widgetSchema->moveField('_', sfWidgetFormSchema::LAST);
   }
 
 }
