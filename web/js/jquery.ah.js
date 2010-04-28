@@ -10,14 +10,30 @@
 	 */
 	$.fn.incrementFields = function(container) {
 		return this.each(function() {
+			var nameRe = new RegExp('\\[' + container + '\\]\\[(\\d+)\\]');
+			var idRe = new RegExp('_' + container + '_(\\d+)_');
+
 			$(this).find(':input').each(function() { // find each input
-				var re = new RegExp('\\[' + container + '\\]\\[(\\d+)\\]'), matches;
-				if (matches = re.exec(this.name)) { // check if its name contains [container][number]
-					// if so, increase the number
-					this.name = this.name.replace(re,'[' + container + '][' + (parseInt(matches[1],10)+1) + ']');
+				var matches;
+				if (matches = nameRe.exec(this.name)) { // check if its name contains [container][number]
+					// if so, increase the number in field name
+					this.name = this.name.replace(nameRe,'[' + container + '][' + (parseInt(matches[1],10)+1) + ']');
+					if (this.id) { // and id
+						this.id = this.id.replace('_'+container+'_'+matches[1]+'_',
+												  '_'+container+'_'+(parseInt(matches[1],10)+1)+'_');
+					}
 				}
 				$(this).trigger('change.ah'); // trigger onchange event just for a case
 			}).end();
+
+			// fix labels
+			$(this).find('label:for').each(function() {
+				var matches;
+				if (matches = idRe.exec($(this).attr('for'))) { // check if its name contains _container_number_
+					// if so, increase the number in label for attribute
+					$(this).attr('for', $(this).attr('for').replace(idRe,'_' + container + '_' + (parseInt(matches[1],10)+1) + '_'));
+				}
+			});
 
 			// increase the number in first <th>
 			$header = $(this).find('th').eq(0);
