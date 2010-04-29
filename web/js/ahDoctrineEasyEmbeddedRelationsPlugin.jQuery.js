@@ -44,7 +44,6 @@
 		});
 	}
 
-
 })(jQuery);
 
 jQuery(function($) {
@@ -64,5 +63,4 @@ jQuery(function($) {
 		// $(document).bind('beforeadd.ah', function(event) { $(event.target).hide() /* event.target is cloned row */ });
 		// $(document).bind('afteradd.ah', function(event) { });
 	})
-})
-
+});

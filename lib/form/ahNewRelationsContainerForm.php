@@ -7,20 +7,19 @@
  * @subpackage form
  * @author     Krzysztof Kotowicz <kkotowicz at gmail dot com>
  */
-class ahNewRelationsContainerForm extends sfForm
+class ahNewRelationsContainerForm extends BaseForm
 {
-
   public function configure()
   {
     $button = new ahNewRelationField(array(
-        'containerName' => $this->getOption('containerName'),
-        'addJavascript' => $this->getOption('addByCloning'),
+      'containerName' => $this->getOption('containerName'), 
+      'addJavascript' => $this->getOption('addByCloning'),
+      'useJSFramework' => $this->getOption('useJSFramework')
     ));
 
     $this->setWidget('_', $button);
   }
-
-
+  
   /**
    * Moves button below embedded forms
    * @inheritdoc
@@ -33,5 +32,4 @@ class ahNewRelationsContainerForm extends sfForm
     parent::embedForm($name, $form, $decorator);
     $this->widgetSchema->moveField('_', sfWidgetFormSchema::LAST);
   }
-
 }
