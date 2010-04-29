@@ -24,9 +24,10 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
         'newFormAfterExistingRelations' => false,
         'multipleNewForms' => false,
         'newFormsInitialCount' => 1,
-        'newFormsContainerForm' => null, // pass sfForm object here or we will create ahNewRelationsContainerForm
+        'newFormsContainerForm' => null, // pass BaseForm object here or we will create ahNewRelationsContainerForm
         'newRelationButtonLabel' => '+',
         'newRelationAddByCloning' => true,
+        'newRelationUseJSFramework' => 'jQuery'
     );
 
   protected function addDefaultRelationSettings(array $settings)
@@ -416,9 +417,12 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
     {
       $subForm = new ahNewRelationsContainerForm(
         array('new_relation' => $relationSettings['newRelationButtonLabel']),
-        array('containerName' => $containerName,
-              'addByCloning' => $relationSettings['newRelationAddByCloning'],
-        ));
+        array(
+          'containerName' => $containerName, 
+          'addByCloning' => $relationSettings['newRelationAddByCloning'],
+          'useJSFramework' => $relationSettings['newRelationUseJSFramework']
+        )
+      );
     }
 
     unset($subForm[$subForm->getCSRFFieldName()]);
