@@ -78,9 +78,13 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
           }
         }
       }
-
+      
       $formClass = $relationSettings['formClass'];
-      $formArgs = array_merge($relationSettings['formClassArgs'], array(array('ah_add_delete_checkbox' => true)));
+      $formArgs = array_merge(
+        $relationSettings['formClassArgs'], 
+        array(array('ah_add_delete_checkbox' => true))
+      );
+      
       $this->embedRelation($relationName, $formClass, $formArgs);
 
       /*
