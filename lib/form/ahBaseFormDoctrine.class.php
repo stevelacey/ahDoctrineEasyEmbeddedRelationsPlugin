@@ -55,10 +55,8 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
           $formLabel = $relationSettings['newFormLabel'];
           if ($relationSettings['multipleNewForms']) // allow multiple new forms for this relation
           {
-
             $newFormsCount = $relationSettings['newFormsInitialCount'];
-
-
+            
             $subForm = $this->newFormsContainerFormFactory($relationSettings, $containerName);
             for ($i = 0; $i < $newFormsCount; $i++)
             {
