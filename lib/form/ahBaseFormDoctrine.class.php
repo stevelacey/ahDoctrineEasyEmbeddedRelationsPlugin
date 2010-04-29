@@ -5,7 +5,9 @@
  *
  * @package    ahDoctrineEasyEmbeddedRelationsPlugin
  * @subpackage form
- * @author     Daniel Lohse, Steve Guhr <info@asaphosting.de>, Krzysztof Kotowicz <kkotowicz at gmail dot com>
+ * @author     Daniel Lohse <info@asaphosting.de>
+ * @author     Steve Guhr <info@asaphosting.de>
+ * @author     Krzysztof Kotowicz <kkotowicz at gmail dot com>
  */
 abstract class ahBaseFormDoctrine extends sfFormDoctrine
 {
@@ -60,7 +62,10 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
             $subForm = $this->newFormsContainerFormFactory($relationSettings, $containerName);
             for ($i = 0; $i < $newFormsCount; $i++)
             {
-              // we need to create new forms with cloned object inside (otherwise only the last new values would be saved)
+              /*
+               * we need to create new forms with cloned object inside
+               * (otherwise only the last new values would be saved)
+               */
               $newForm = $this->embeddedFormFactory($relationName, $relationSettings, $relation, $i + 1);
               $subForm->embedForm($i, $newForm);
             }
@@ -74,9 +79,13 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
           }
         }
       }
-
+      
       $formClass = $relationSettings['formClass'];
-      $formArgs = array_merge($relationSettings['formClassArgs'], array(array('ah_add_delete_checkbox' => true)));
+      $formArgs = array_merge(
+        $relationSettings['formClassArgs'], 
+        array(array('ah_add_delete_checkbox' => true))
+      );
+      
       $this->embedRelation($relationName, $formClass, $formArgs);
 
       /*
@@ -125,8 +134,10 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
   }
 
   /**
-   * Here we just drop the embedded creation forms if no value has been provided for them (this simulates a non-required embedded form),
-   * please provide the fields for the related embedded form in the call to $this->embedRelations() so we don't throw validation errors
+   * Here we just drop the embedded creation forms if no value has been
+   * provided for them (this simulates a non-required embedded form),
+   * please provide the fields for the related embedded form in the call
+   * to $this->embedRelations() so we don't throw validation errors
    * if the user did not want to add a new related object
    *
    * @see sfForm::doBind()
