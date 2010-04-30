@@ -27,7 +27,7 @@
 			}).end();
 
 			// fix labels
-			$(this).find('label:for').each(function() {
+			$(this).find('label[for]').each(function() {
 				var matches;
 				if (matches = idRe.exec($(this).attr('for'))) { // check if its name contains _container_number_
 					// if so, increase the number in label for attribute
@@ -55,9 +55,15 @@ jQuery(function($) {
 		$row = $(this).parents('tr').siblings(':last');
 
 		// clone it, increment the fields and insert it below, additionally triggering events
-		$row.clone()
+		$row.trigger('beforeclone.ah');
+		var $newrow = $row.clone(true);
+		$row.trigger('afterclone.ah')
+
+		$newrow
 			.incrementFields($(this).attr('rel'))
-			.trigger('beforeadd.ah').insertAfter($row).trigger('afteradd.ah');
+			.trigger('beforeadd.ah')
+			.insertAfter($row)
+			.trigger('afteradd.ah');
 
 		//use events to further modify the cloned row like this
 		// $(document).bind('beforeadd.ah', function(event) { $(event.target).hide() /* event.target is cloned row */ });
