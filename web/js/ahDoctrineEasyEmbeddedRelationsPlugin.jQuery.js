@@ -36,7 +36,7 @@
 			});
 
 			// increase the number in first <th>
-			$header = $(this).find('th').eq(0);
+			$header = $(this).children('th').eq(0);
 			if ($header.text().match(/^\d+$/)) {
 				$header.text(parseInt($header.text(),10) + 1);
 			}
