@@ -88,8 +88,12 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
 
       $this->embedRelation($relationName, $formClass, $formArgs);
 
-      if ($relationSettings['formFormatter']) {
-        $this[$relationName]->getWidget()->setFormFormatterName($relationSettings['formFormatter']);
+      if ($relationSettings['formFormatter']) { // switch formatter
+        $widget = $this[$relationName]->getWidget()->getWidget();
+        $widget->setFormFormatterName($relationSettings['formFormatter']);
+        // not only we have to change formatter name
+        // but also recreate schemadecorator as there is no setter for decorator in sfWidgetFormSchemaDecorator :(
+        $this->widgetSchema[$relationName] = new sfWidgetFormSchemaDecorator($widget, $widget->getFormFormatter()->getDecoratorFormat());
       }
 
       /*
