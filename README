@@ -157,7 +157,7 @@ Only the first option is required, the rest can be guessed using the schema and 
 
   * `formClass` (string, not required): the form class to use for the existing related objects.
 
-  * `formClassArgs` (array of arrays, not required): form class options to pass to the existing related objects form class on instantiation
+  * `formClassArgs` (array of arrays, not required): form class options to pass to the existing related objects form class on instantiation.
     As of version 1.1 it's not necessary to create a separate form class for the existing related forms to display the delete checkbox.
     This is now handled by the symfony event dispatcher. If you want to change how that works you can always copy over this method and change it to suit your needs:
 
@@ -186,6 +186,8 @@ Only the first option is required, the rest can be guessed using the schema and 
 
     This works because we're calling the plugin's event handler method.
     This either returns the form so it added the delete checkbox and the validator and you can act on that, or it returns false and you don't act on that. Neat and tidy. :)
+    
+    If you want to disable the checkbox to delete existing related records entirely set this option to this: 'formClassArgs' => array(array('ah_add_delete_checkbox' => false)) or add it accordingly to your already existing form class arguments.
 
   * `displayEmptyRelations` (boolean, not required): set this option to true (false is the default) if you want to check for existing related objects yourself. This can be done in the form template and is useful if you want to let the user know that 'There are no related repositories yet.'. The default is just not displaying anything in this case, which works for me. :)
 

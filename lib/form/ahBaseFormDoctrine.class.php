@@ -63,8 +63,7 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
             for ($i = 0; $i < $newFormsCount; $i++)
             {
               /*
-               * we need to create new forms with cloned object inside
-               * (otherwise only the last new values would be saved)
+               * we need to create new forms with cloned object inside (otherwise only the last new values would be saved)
                */
               $newForm = $this->embeddedFormFactory($relationName, $relationSettings, $relation, $i + 1);
               $subForm->embedForm($i, $newForm);
@@ -81,10 +80,11 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
       }
 
       $formClass = $relationSettings['formClass'];
-      $formArgs = array_merge(
-        $relationSettings['formClassArgs'],
-        array(array('ah_add_delete_checkbox' => true))
-      );
+      $formArgs = $relationSettings['formClassArgs'];
+      if ((isset($formArgs[0]) && !array_key_exists('ah_add_delete_checkbox', $formArgs[0])) || !isset($formArgs[0]))
+      {
+        $formArgs[0]['ah_add_delete_checkbox'] = true;
+      }
 
       $this->embedRelation($relationName, $formClass, $formArgs);
 
@@ -130,7 +130,7 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
   {
     $form = $event->getSubject();
 
-    if($form instanceof sfFormDoctrine && $form->getOption('ah_add_delete_checkbox', false) && !$form->isNew())
+    if ($form instanceof sfFormDoctrine && $form->getOption('ah_add_delete_checkbox', false) && !$form->isNew())
     {
       $form->setWidget('delete_object', new sfWidgetFormInputCheckbox(array('label' => 'Delete')));
       $form->setValidator('delete_object', new sfValidatorPass());
