@@ -28,7 +28,7 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
         'customEmbeddedFormLabelMethod' => null,
         'formFormatter' => null,
         'multipleNewForms' => false,
-        'newFormsInitialCount' => 1,
+        'newFormsInitialCount' => 2,
         'newFormsContainerForm' => null, // pass BaseForm object here or we'll create ahNewRelationsContainerForm
         'newRelationButtonLabel' => '+',
         'newRelationAddByCloning' => true,
