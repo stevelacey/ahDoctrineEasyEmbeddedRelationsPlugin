@@ -29,7 +29,7 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
         'formFormatter' => null,
         'multipleNewForms' => false,
         'newFormsInitialCount' => 2,
-        'newFormsContainerForm' => null, // pass BaseForm object here or we'll create ahNewRelationsContainerForm
+        'newFormsContainerForm' => null, // pass BaseForm object here or we will create ahNewRelationsContainerForm
         'newRelationButtonLabel' => '+',
         'newRelationAddByCloning' => true,
         'newRelationUseJSFramework' => 'jQuery'
@@ -366,7 +366,8 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
   {
     foreach ($this->getObject()->getTable()->getRelations() as $relation)
     {
-      if (is_a($form->getObject(), $relation->getClass()))
+      $class = $relation->getClass();
+      if ($form->getObject() instanceof $class)
       {
         return $relation->getAlias();
       }
@@ -374,6 +375,23 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
 
     return false;
   }
+  
+  /**
+     * Get the used relation alias when given an object
+     *
+     * @param $object
+     */
+    private function getRelationAliasByObject($object)
+    {
+      foreach ($object->getTable()->getRelations() as $alias => $relation)
+      {
+        $class = $relation->getClass();
+        if ($this->getObject() instanceof $class)
+        {
+          return $alias;
+        }
+      }
+    }
 
   /**
    * Checks if given form values for new form are 'empty' (i.e. should the form be discarded)
@@ -464,7 +482,7 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
     {
       $newFormObjectClass = $relation->getClass();
       $newFormObject = new $newFormObjectClass();
-      $newFormObject[$relation->getForeignFieldName()] = $this->getObject()->get($relation->getLocalFieldName());
+      $newFormObject[$this->getRelationAliasByObject($newFormObject)] = $this->getObject();
     } else
     {
       $newFormObject = $this->getObject()->$relationName;
