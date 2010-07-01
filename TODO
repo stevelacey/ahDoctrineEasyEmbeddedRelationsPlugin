@@ -1,6 +1,6 @@
 # TODO #
 
-## Version 1.4 ##
+## Version 1.5 ##
 
     * try improving and abstracting the functionality to ignore empty "add new" forms so this does not have 
       to be managed in the embedding form class anymore
@@ -21,6 +21,12 @@
                 * the rest is tested for number of errors so I need to know the maximum number of errors 
                   that can be thrown from there; if this number is equal to the number of errors the form has thrown 
                   after validation then - bingo! - the form is considered "empty"
+        - 3rd option is adding a "Ignore" checkbox and adding a bit of JavaScript that deselect this checkbox 
+          when the user starts typing into one of the inputs/selects a file/checks a checkbox/select an option in a select box etc.
+            => this is good: a) because it's easy to implement (at least, the symfony part ;-)), 
+                             b) because it's fast (no more checking for empty form fields), 
+                             c) because a few edge-cases cannot be done with the current code (embedded form has only two select boxes 
+                                that are not empty when the form is created)
             
       => URLS:
           * http://www.symfony-project.org/more-with-symfony/1_4/en/05-Custom-Widgets-and-Validators
