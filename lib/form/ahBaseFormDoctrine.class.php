@@ -124,11 +124,7 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
 
       if ($relationSettings['formFormatter']) // switch formatter
       {
-        $widget = $this[$relationName]->getWidget()->getWidget();
-        $widget->setFormFormatterName($relationSettings['formFormatter']);
-        // not only we have to change formatter name
-        // but also recreate schemadecorator as there is no setter for decorator in sfWidgetFormSchemaDecorator :(
-        $this->widgetSchema[$relationName] = new sfWidgetFormSchemaDecorator($widget, $widget->getFormFormatter()->getDecoratorFormat());
+        $this->switchFormatter($relationName, $relationSettings['formFormatter']);
       }
 
       /*
@@ -159,6 +155,14 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
     }
 
     $this->getEventDispatcher()->disconnect('form.post_configure', array($this, 'listenToFormPostConfigureEvent'));
+  }
+
+  protected function switchFormatter($subFormName, $formatter) {
+        $widget = $this[$subFormName]->getWidget()->getWidget();
+        $widget->setFormFormatterName($formatter);
+        // not only we have to change formatter name
+        // but also recreate schemadecorator as there is no setter for decorator in sfWidgetFormSchemaDecorator :(
+        $this->widgetSchema[$subFormName] = new sfWidgetFormSchemaDecorator($widget, $widget->getFormFormatter()->getDecoratorFormat());
   }
 
   public function listenToFormPostConfigureEvent(sfEvent $event)
