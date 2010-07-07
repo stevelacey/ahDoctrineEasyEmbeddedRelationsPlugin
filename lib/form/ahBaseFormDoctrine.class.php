@@ -232,16 +232,19 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
           $this->validatorSchema[$containerName] = $this->embeddedForms[$containerName]->getValidatorSchema();
 
           // check for new forms that were deleted client-side and never submitted
-          foreach (array_keys($this->embeddedForms[$containerName]->embeddedForms) as $index)
+          if (array_key_exists($containerName, $values))
           {
-            if (!array_key_exists($index, $values[$containerName]))
+            foreach (array_keys($this->embeddedForms[$containerName]->embeddedForms) as $index)
             {
-                unset($this->embeddedForms[$containerName][$index]);
-                unset($this->validatorSchema[$containerName][$index]);
+              if (!array_key_exists($index, $values[$containerName]))
+              {
+                 unset($this->embeddedForms[$containerName][$index]);
+                 unset($this->validatorSchema[$containerName][$index]);
+              }
             }
           }
 
-          if (count($values[$containerName]) === 0) // all new forms were empty
+          if (!array_key_exists($containerName, $values) || count($values[$containerName]) === 0) // all new forms were empty
           {
             unset($values[$containerName], $this->validatorSchema[$containerName]);
           }
