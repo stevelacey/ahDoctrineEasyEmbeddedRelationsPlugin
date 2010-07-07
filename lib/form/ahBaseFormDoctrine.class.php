@@ -90,7 +90,7 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
       {
         $formArgs[0]['ah_add_delete_checkbox'] = true;
       }
-
+      
       if ($relation->isOneToOne())
       {
         $form = new $formClass($this->getObject()->$relationName, $formArgs[0]);
@@ -172,11 +172,20 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
     if ($form instanceof sfFormDoctrine && $form->getOption('ah_add_delete_checkbox', false) && !$form->isNew())
     {
       $form->setWidget('delete_object', new sfWidgetFormInputCheckbox(array('label' => 'Delete')));
-      $form->setValidator('delete_object', new sfValidatorPass());
+      $form->setValidator('delete_object', new sfValidatorPass(array('required' => false)));
 
       return $form;
     }
+    
+    if ($form instanceof sfFormDoctrine && $form->getOption('ah_add_ignore_checkbox', true) && $form->isNew())
+    {
+      $form->setWidget('ignore_object', new sfWidgetFormInputCheckbox(array('label' => 'Ignore')));
+      $form->setValidator('ignore_object', new sfValidatorPass(array('required' => false)));
+      $form->setDefault('ignore_object', true);
 
+      return $form;
+    }
+    
     return false;
   }
 
@@ -355,7 +364,7 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
         {
           continue;
         }
-
+        
         $form->getObject()->save($con);
         $form->saveEmbeddedForms($con);
       }
@@ -410,6 +419,11 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
    */
   protected function isNewFormEmpty(array $values, array $keys)
   {
+    if (isset($values['ignore_object']))
+    {
+      return true;
+    }
+
     if (count($keys['considerNewFormEmptyFields']) === 0 || !isset($values)) return false;
 
     $emptyFields = 0;
