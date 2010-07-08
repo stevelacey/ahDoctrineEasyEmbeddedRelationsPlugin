@@ -347,11 +347,11 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
   public function saveEmbeddedForms($con = null, $forms = null)
   {
     if (null === $con) $con = $this->getConnection();
-    if (null === $forms) $forms = $this->getEmbeddedForms();
+    if (null === $forms) $forms = $this->embeddedForms;
 
-    foreach ($forms as $form)
+    foreach ($forms as $key => $form)
     {
-      if ($form instanceof sfFormObject)
+      if ($form instanceof sfFormDoctrine)
       {
         /**
          * we know it's a form but we don't know what (embedded) relation it represents;
@@ -365,7 +365,12 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
           continue;
         }
         
-        $form->getObject()->save($con);
+        if (!$form->isNew)
+        {
+          unset($form->validatorSchema['_csrf_token']);
+          $form->bind($this->taintedValues[$key], $this->taintedFiles);
+          $form->doSave($con);
+        }
         $form->saveEmbeddedForms($con);
       }
       else
