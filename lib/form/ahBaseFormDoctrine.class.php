@@ -14,7 +14,7 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
 {
   protected
     $scheduledForDeletion = array(), // related objects scheduled for deletion
-    $embedRelations = array(),       // so we can check which relations are embedded in this form
+    $embeddedRelations = array(),       // so we can check which relations are embedded in this form
     $defaultRelationSettings = array(
         'considerNewFormEmptyFields' => array(),
         'noNewForm' => false,
@@ -42,7 +42,7 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
 
   public function embedRelations(array $relations)
   {
-    $this->embedRelations = $relations;
+    $this->embeddedRelations = $relations;
 
     $this->getEventDispatcher()->connect('form.post_configure', array($this, 'listenToFormPostConfigureEvent'));
 
@@ -200,7 +200,7 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
    */
   protected function doBind(array $values)
   {
-    foreach ($this->embedRelations as $relationName => $keys)
+    foreach ($this->embeddedRelations as $relationName => $relationSettings)
     {
       $keys = $this->addDefaultRelationSettings($keys);
 
@@ -314,7 +314,8 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
           {
             $this->object->clearRelated($relationName);
           }
-
+          
+          // TODO: look out for $id being an array and not just a number!
           Doctrine::getTable($relation->getClass())->findOneById($id)->delete();
         }
       }
@@ -414,39 +415,39 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
   /**
    * Checks if given form values for new form are 'empty' (i.e. should the form be discarded)
    * @param array $values
-   * @param array $keys settings for the embedded relation
+   * @param array $relationSettings settings for the embedded relation
    * @return bool
    */
-  protected function isNewFormEmpty(array $values, array $keys)
+  protected function isNewFormEmpty(array $values, array $relationSettings)
   {
     if (isset($values['ignore_object']))
     {
       return true;
     }
-
-    if (count($keys['considerNewFormEmptyFields']) === 0 || !isset($values)) return false;
-
+    
+    if (count($relationSettings['considerNewFormEmptyFields']) === 0 || !isset($values)) return false;
+    
     $emptyFields = 0;
-    foreach ($keys['considerNewFormEmptyFields'] as $key)
+    foreach ($relationSettings['considerNewFormEmptyFields'] as $field)
     {
-      if (is_array($values[$key]))
+      if (is_array($values[$field]))
       {
-        if (count($values[$key]) === 0)
+        if (count($values[$field]) === 0)
         {
           $emptyFields++;
         }
-        elseif (array_key_exists('tmp_name', $values[$key]) && $values[$key]['tmp_name'] === '' && $values[$key]['size'] === 0)
+        elseif (array_key_exists('tmp_name', $values[$field]) && $values[$field]['tmp_name'] === '' && $values[$field]['size'] === 0)
         {
           $emptyFields++;
         }
       }
-      elseif ('' === trim($values[$key]))
+      elseif ('' === trim($values[$field]))
       {
         $emptyFields++;
       }
     }
 
-    if ($emptyFields === count($keys['considerNewFormEmptyFields']))
+    if ($emptyFields === count($relationSettings['considerNewFormEmptyFields']))
     {
       return true;
     }
@@ -540,6 +541,7 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
     }
 
     unset($subForm[$subForm->getCSRFFieldName()]);
+    
     return $subForm;
   }
 }
