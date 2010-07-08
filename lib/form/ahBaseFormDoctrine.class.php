@@ -203,6 +203,7 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
    */
   protected function doBind(array $values)
   {
+    //echo print_r($this->embeddedRelations, true);
     foreach ($this->embeddedRelations as $relationName => $relationSettings)
     {
       $keys = $this->addDefaultRelationSettings($keys);
