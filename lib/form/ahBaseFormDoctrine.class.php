@@ -232,85 +232,139 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
     //echo print_r($this->embeddedRelations, true);
     foreach ($this->embeddedRelations as $relationName => $relationSettings)
     {
-      $keys = $this->addDefaultRelationSettings($keys);
+      $values = $this->doBindEmbeddedRelation($values, $relationName, $relationSettings);
+    }
+    
+    parent::doBind($values);
+  }
+  
+  protected function doBindEmbeddedRelation($values, $relationName, $relationSettings, $parentTableClass = null)
+  {
+    $relationSettings = $this->addDefaultRelationSettings($relationSettings);
+    
+    if (null === $parentTableClass)
+    {
+      $parentTableClass = $this->getObject()->getTable();
+    }
 
-      if (!$keys['noNewForm'])
+    if (!$relationSettings['noNewForm'])
+    {
+      $containerName = 'new_'.$relationName;
+
+      if ($relationSettings['multipleNewForms']) // multiple new forms for this relation
       {
-        $containerName = 'new_'.$relationName;
-
-        if ($keys['multipleNewForms']) // just a single new form for this relation
+        if (array_key_exists($containerName, $values))
         {
-          if (array_key_exists($containerName, $values))
+          foreach ($values[$containerName] as $index => $subFormValues)
           {
-            foreach ($values[$containerName] as $index => $subFormValues)
+            if ($this->isNewFormEmpty($subFormValues, $relationSettings))
             {
-              if ($this->isNewFormEmpty($subFormValues, $keys))
+              unset($values[$containerName][$index], $this->embeddedForms[$containerName][$index]);
+              unset($this->validatorSchema[$containerName][$index]);
+            }
+            else
+            {
+              // if new forms were inserted client-side, embed them here
+              if (!isset($this->embeddedForms[$containerName][$index]))
               {
-                unset($values[$containerName][$index], $this->embeddedForms[$containerName][$index]);
-                unset($this->validatorSchema[$containerName][$index]);
-              }
-              else
-              {
-                // if new forms were inserted client-side, embed them here
-                if (!isset($this->embeddedForms[$containerName][$index]))
-                {
-                  // create and embed new form
-                  $relation = $this->getObject()->getTable()->getRelation($relationName);
-                  $addedForm = $this->embeddedFormFactory($relationName, $keys, $relation, ((int) $index) + 1);
-                  $ef = $this->embeddedForms[$containerName];
-                  $ef->embedForm($index, $addedForm);
-                  // ... and reset other stuff (symfony loses all this since container form is already embedded)
-                  $this->validatorSchema[$containerName] = $ef->getValidatorSchema();
-                  $this->widgetSchema[$containerName] = new sfWidgetFormSchemaDecorator($ef->getWidgetSchema(), $ef->getWidgetSchema()->getFormFormatter()->getDecoratorFormat());
-                  $this->setDefault($containerName, $ef->getDefaults());
-                }
+                // create and embed new form
+                $relation = $parentTableClass->getRelation($relationName);
+                $addedForm = $this->embeddedFormFactory($relationName, $relationSettings, $relation, ((int) $index) + 1);
+                $ef = $this->embeddedForms[$containerName];
+                $ef->embedForm($index, $addedForm);
+                // ... and reset other stuff (symfony loses all this since container form is already embedded)
+                $this->validatorSchema[$containerName] = $ef->getValidatorSchema();
+                $this->widgetSchema[$containerName] = new sfWidgetFormSchemaDecorator($ef->getWidgetSchema(), $ef->getWidgetSchema()->getFormFormatter()->getDecoratorFormat());
+                $this->setDefault($containerName, $ef->getDefaults());
               }
             }
-          }
-
-          $this->validatorSchema[$containerName] = $this->embeddedForms[$containerName]->getValidatorSchema();
-
-          // check for new forms that were deleted client-side and never submitted
-          if (array_key_exists($containerName, $values))
-          {
-            foreach (array_keys($this->embeddedForms[$containerName]->embeddedForms) as $index)
-            {
-              if (!array_key_exists($index, $values[$containerName]))
-              {
-                 unset($this->embeddedForms[$containerName][$index]);
-                 unset($this->validatorSchema[$containerName][$index]);
-              }
-            }
-          }
-
-          if (!array_key_exists($containerName, $values) || count($values[$containerName]) === 0) // all new forms were empty
-          {
-            unset($values[$containerName], $this->validatorSchema[$containerName]);
           }
         }
-        else
+
+        $this->validatorSchema[$containerName] = $this->embeddedForms[$containerName]->getValidatorSchema();
+        
+        // check for new forms that were deleted client-side and never submitted
+        if (array_key_exists($containerName, $values))
         {
-          if (!array_key_exists($containerName, $values) || $this->isNewFormEmpty($values[$containerName], $keys))
+          foreach (array_keys($this->embeddedForms[$containerName]->embeddedForms) as $index)
           {
-            unset($values[$containerName], $this->validatorSchema[$containerName]);
+            if (!array_key_exists($index, $values[$containerName]))
+            {
+               unset($this->embeddedForms[$containerName][$index]);
+               unset($this->validatorSchema[$containerName][$index]);
+            }
           }
+        }
+        
+        if (!array_key_exists($containerName, $values) || count($values[$containerName]) === 0) // all new forms were empty
+        {
+          unset($values[$containerName], $this->validatorSchema[$containerName]);
         }
       }
-
-      if (isset($values[$relationName]))
+      else // just a single new form for this relation
       {
-        $oneToOneRelationFix = $this->getObject()->getTable()->getRelation($relationName)->isOneToOne() ? array($values[$relationName]) : $values[$relationName];
-        foreach ($oneToOneRelationFix as $i => $relationValues)
+        //echo print_r($containerName, true);
+        //echo print_r($values, true);
+        if (!array_key_exists($containerName, $values) || $this->isNewFormEmpty($values[$containerName], $relationSettings))
         {
-          if (isset($relationValues['delete_object']) && $relationValues['id'])
-          {
-            $this->scheduledForDeletion[$relationName][$i] = $relationValues['id'];
-          }
+          unset($values[$containerName], $this->validatorSchema[$containerName]);
         }
       }
     }
 
-    parent::doBind($values);
+    if (isset($values[$relationName]))
+    {
+      $oneToOneRelationFix = $parentTableClass->getRelation($relationName)->isOneToOne() ? array($values[$relationName]) : $values[$relationName];
+      foreach ($oneToOneRelationFix as $i => $relationValues)
+      {
+        if (isset($relationValues['delete_object']))
+        {
+          $pks = Doctrine::getTable($parentTableClass->getRelation($relationName)->getClass())->getIdentifierColumnNames();
+          
+          if (count($pks) === 1)
+          {
+            $this->scheduledForDeletion[$relationName][$i] = $relationValues[$pks[0]];
+          }
+          else
+          {
+            $pksFilled = array();
+            foreach ($pks as $primaryKey)
+            {
+              $pksFilled[$primaryKey] = $relationValues[$primaryKey];
+            }
+            
+            $this->scheduledForDeletion[$relationName][$i] = $pksFilled;
+          }
+        }
+      }
+    }
+    
+    if (isset($relationSettings['embeddedRelation']))
+    {
+      $newParentTableClass = Doctrine::getTable($parentTableClass->getRelation($relationName)->getClass());
+      foreach ($relationSettings['embeddedRelation'] as $nestedEmbeddedRelationName => $nestedEmbeddedRelationSettings)
+      {
+        //echo print_r('Before: '.$relationName.'/'.$nestedEmbeddedRelationName, true)."\n";
+        //echo print_r($values[$relationName], true)."\n\n";
+        //echo print_r('Before: '.$relationName.'/'.$nestedEmbeddedRelationName, true)."\n";
+        //echo print_r($newParentTableClass->getRelation($nestedEmbeddedRelationName)->isOneToOne(), true);
+        if (!$newParentTableClass->getRelation($nestedEmbeddedRelationName)->isOneToOne())
+        {
+          $tmp = $values[$relationName];
+          foreach ($tmp as $index => $nestedRelationValues)
+          {
+            $values[$relationName][$index] = $this->doBindEmbeddedRelation($nestedRelationValues, $nestedEmbeddedRelationName, $nestedEmbeddedRelationSettings, $newParentTableClass);
+          }
+        }
+        else
+        {
+          //echo print_r($values[$relationName], true);
+          $values[$relationName][0] = $this->doBindEmbeddedRelation($values[$relationName][0], $nestedEmbeddedRelationName, $nestedEmbeddedRelationSettings, $newParentTableClass);
+        }
+      }
+    }
+    
+    return $values;
   }
 
   /**
