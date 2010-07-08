@@ -556,25 +556,19 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
         unset($newForm[$primaryKey]);
       }
       unset($newForm[$relation->getForeignColumnName()]);
-
-      // FIXME/TODO: check if this even works for one-to-one
-      // CORRECTION 1: Not really, it creates another record but doesn't link it to this object!
-      // CORRECTION 2: No, it can't, silly! For that to work the id of the not-yet-existant related record would have to be known...
-      // Think about overriding the save method and after calling parent::save($con) we should update the relations that:
-      //   1. are one-to-one AND
-      //   2. are LocalKey :)
+      
       if (null !== $formLabel)
       {
         $newForm->getWidgetSchema()->setLabel($formLabel);
       }
-
+      
       return $newForm;
   }
 
   /**
    * Returns Doctrine Record object prepared for form given the relation
-   * @param string $relationName
-   * @param Doctrine_Relation $relation
+   * @param  string $relationName
+   * @param  Doctrine_Relation $relation
    * @return Doctrine_Record
    */
   private function embeddedFormObjectFactory($relationName, Doctrine_Relation $relation)
@@ -588,7 +582,7 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
     {
       $newFormObject = $this->getObject()->$relationName;
     }
-
+    
     return $newFormObject;
   }
 
@@ -630,12 +624,13 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
    */
   private function isScheduledForDeletion($formObject, $relationName)
   {
-    foreach($this->scheduledForDeletion[$relationName] as $ids)
+    foreach ($this->scheduledForDeletion[$relationName] as $ids)
     {
       $found = array();
+      
       foreach ($ids as $k => $v)
       {
-        $found[] = ($formobj->get($k) == $v);
+        $found[] = ($formObject->get($k) === $v);
       }
       
       $found = array_unique($found);
