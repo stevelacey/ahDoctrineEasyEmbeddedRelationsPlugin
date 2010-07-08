@@ -43,6 +43,11 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
   public function embedRelations(array $relations)
   {
     $this->embeddedRelations = $relations;
+    
+    if (false !== ($parentForm = $this->getOption('ah_parent_form', false)))
+    {
+      $parentForm->addEmbeddedRelation($this->getOption('ah_parent_form_relation'), $relations);
+    }
 
     $this->getEventDispatcher()->connect('form.post_configure', array($this, 'listenToFormPostConfigureEvent'));
 
@@ -90,6 +95,15 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
       {
         $formArgs[0]['ah_add_delete_checkbox'] = true;
       }
+      
+      $parentRelation = $this->getOption('ah_parent_form_relation', array());
+      $parentForm = $this->getOption('ah_parent_form', $this);
+      array_push($parentRelation, $relationName, 'embeddedRelation');
+      
+      $formArgs[0]['ah_parent_form'] = $parentForm;
+      $formArgs[0]['ah_parent_form_relation'] = $parentRelation;
+      //echo print_r(get_class($this->getObject()), true)."\n";
+      //echo print_r($parentRelation, true);
       
       if ($relation->isOneToOne())
       {
@@ -157,6 +171,18 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
     }
 
     $this->getEventDispatcher()->disconnect('form.post_configure', array($this, 'listenToFormPostConfigureEvent'));
+  }
+  
+  public function addEmbeddedRelation($relationName, $relationSettings)
+  {
+    $orig = $this->embeddedRelations;
+    $orig = new Matrix($orig);
+    $orig->set(implode('.', $relationName), $relationSettings);
+    
+    $this->embeddedRelations = $orig->get();
+    
+    //echo print_r('After:', true)."\n";
+    //echo print_r($this->embeddedRelations, true);
   }
 
   protected function switchFormatter($subFormName, $formatter) {
