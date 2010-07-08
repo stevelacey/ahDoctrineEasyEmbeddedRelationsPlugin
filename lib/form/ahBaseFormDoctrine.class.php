@@ -314,26 +314,20 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
 
     if (isset($values[$relationName]))
     {
+      $relationID = $parentTableClass->getRelation($relationName)->getTable()->getIdentifier();
       $oneToOneRelationFix = $parentTableClass->getRelation($relationName)->isOneToOne() ? array($values[$relationName]) : $values[$relationName];
+      
       foreach ($oneToOneRelationFix as $i => $relationValues)
       {
         if (isset($relationValues['delete_object']))
         {
-          $pks = Doctrine::getTable($parentTableClass->getRelation($relationName)->getClass())->getIdentifierColumnNames();
-          
-          if (count($pks) === 1)
+          if (is_array($relationID))
           {
-            $this->scheduledForDeletion[$relationName][$i] = $relationValues[$pks[0]];
+            foreach($relationID as $c) $this->scheduledForDeletion[$relationName][$i][$c] = $relationValues[$c];
           }
-          else
+          elseif (isset($relationValues[$relationID]))
           {
-            $pksFilled = array();
-            foreach ($pks as $primaryKey)
-            {
-              $pksFilled[$primaryKey] = $relationValues[$primaryKey];
-            }
-            
-            $this->scheduledForDeletion[$relationName][$i] = $pksFilled;
+            $this->scheduledForDeletion[$relationName][$i][$relationID] = $relationValues[$relationID];
           }
         }
       }
@@ -399,8 +393,7 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
             $this->object->clearRelated($relationName);
           }
           
-          // TODO: look out for $id being an array and not just a number!
-          Doctrine::getTable($relation->getClass())->findOneById($id)->delete();
+          Doctrine::getTable($relation->getClass())->find(array_values($id))->delete();
         }
       }
     }
@@ -444,8 +437,8 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
          * so there isn't anything weird happening
          */
         $relationName = $this->getRelationByEmbeddedFormClass($form);
-
-        if ($relationName && isset($this->scheduledForDeletion[$relationName]) && array_key_exists($form->getObject()->getId(), array_flip($this->scheduledForDeletion[$relationName])))
+        
+        if ($relationName && isset($this->scheduledForDeletion[$relationName]) && $this->isScheduledForDeletion($form->getObject(), $relationName))
         {
           continue;
         }
@@ -627,5 +620,28 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
     unset($subForm[$subForm->getCSRFFieldName()]);
     
     return $subForm;
+  }
+  
+  /**
+   * Checks if form is scheduled for deletion
+   * @param $formObject
+   * @param string $relationName
+   * @return bool
+   */
+  private function isScheduledForDeletion($formObject, $relationName)
+  {
+    foreach($this->scheduledForDeletion[$relationName] as $ids)
+    {
+      $found = array();
+      foreach ($ids as $k => $v)
+      {
+        $found[] = ($formobj->get($k) == $v);
+      }
+      
+      $found = array_unique($found);
+      if (count($found) === 1 && $found[0]) return $found;
+    }
+    
+    return false;
   }
 }
