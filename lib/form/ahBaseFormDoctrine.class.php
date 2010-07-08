@@ -95,9 +95,11 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
       {
         $form = new $formClass($this->getObject()->$relationName, $formArgs[0]);
         $this->embedForm($relationName, $form);
-
-        //maybe we need this: if (!$this->getObject()->relatedExists($relationName))
-        unset($this[$relation->getLocalColumnName()]);
+        
+        /*if (!$this->getObject()->relatedExists($relationName))
+        {
+          unset($this[$relation->getLocalColumnName()]);
+        }*/
       }
       else
       {
@@ -158,11 +160,12 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
   }
 
   protected function switchFormatter($subFormName, $formatter) {
-        $widget = $this[$subFormName]->getWidget()->getWidget();
-        $widget->setFormFormatterName($formatter);
-        // not only we have to change formatter name
-        // but also recreate schemadecorator as there is no setter for decorator in sfWidgetFormSchemaDecorator :(
-        $this->widgetSchema[$subFormName] = new sfWidgetFormSchemaDecorator($widget, $widget->getFormFormatter()->getDecoratorFormat());
+    $widget = $this[$subFormName]->getWidget()->getWidget();
+    $widget->setFormFormatterName($formatter);
+    
+    // not only do we have to change the name of the formatter, but we also have to re-create the schema decorator
+    // as there is no setter for the decorator in sfWidgetFormSchemaDecorator :(
+    $this->widgetSchema[$subFormName] = new sfWidgetFormSchemaDecorator($widget, $widget->getFormFormatter()->getDecoratorFormat());
   }
 
   public function listenToFormPostConfigureEvent(sfEvent $event)
