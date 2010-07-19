@@ -199,7 +199,7 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
       {
         $containerName = 'new_'.$relationName;
 
-        if ($keys['multipleNewForms']) // just a single new form for this relation
+        if ($keys['multipleNewForms']) // multiple new forms for this relation
         {
           if (array_key_exists($containerName, $values))
           {
@@ -217,7 +217,7 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
                 {
                   // create and embed new form
                   $relation = $this->getObject()->getTable()->getRelation($relationName);
-                  $addedForm = $this->embeddedFormFactory($relationName, $keys, $relation, ((int) $index) + 1);
+                  $addedForm = $this->embeddedFormFactory($relationName, $keys, $relation, ((int)$index) + 1);
                   $ef = $this->embeddedForms[$containerName];
                   $ef->embedForm($index, $addedForm);
                   // ... and reset other stuff (symfony loses all this since container form is already embedded)
@@ -249,7 +249,7 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
             unset($values[$containerName], $this->validatorSchema[$containerName]);
           }
         }
-        else
+        else // just a single new form for this relation
         {
           if (!array_key_exists($containerName, $values) || $this->isNewFormEmpty($values[$containerName], $keys))
           {
@@ -410,7 +410,7 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
    */
   protected function isNewFormEmpty(array $values, array $keys)
   {
-    if (count($keys['considerNewFormEmptyFields']) == 0 || !isset($values)) return false;
+    if (count($keys['considerNewFormEmptyFields']) === 0 || !isset($values)) return false;
 
     $emptyFields = 0;
     foreach ($keys['considerNewFormEmptyFields'] as $key)
