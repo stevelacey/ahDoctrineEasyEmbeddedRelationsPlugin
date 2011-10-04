@@ -21,6 +21,7 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
         'newFormLabel' => null,
         'newFormClass' => null,
         'newFormClassArgs' => array(),
+        'existingRelationsFormLabel' => null,
         'formClass' => null,
         'formClassArgs' => array(),
         'displayEmptyRelations' => false,
@@ -91,9 +92,11 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
         $formArgs[0]['ah_add_delete_checkbox'] = true;
       }
 
+      $formLabel = $relationSettings['existingRelationsFormLabel'];
       if ($relation->isOneToOne())
       {
         $form = new $formClass($this->getObject()->$relationName, $formArgs[0]);
+        $form->getWidgetSchema()->setLabel($formLabel);
         $this->embedForm($relationName, $form);
 
         //maybe we need this: if (!$this->getObject()->relatedExists($relationName))
@@ -106,6 +109,7 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
         foreach ($this->getObject()->$relationName as $index => $childObject)
         {
           $form = new $formClass($childObject, $formArgs[0]);
+          $subForm->getWidgetSchema()->setLabel($formLabel);
 
           $subForm->embedForm($index, $form);
           // check if existing embedded relations should have a different label
