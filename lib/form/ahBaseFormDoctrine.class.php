@@ -105,11 +105,11 @@ abstract class ahBaseFormDoctrine extends sfFormDoctrine
       else
       {
         $subForm = new sfForm();
+        $subForm->getWidgetSchema()->setLabel($formLabel);
 
         foreach ($this->getObject()->$relationName as $index => $childObject)
         {
           $form = new $formClass($childObject, $formArgs[0]);
-          $subForm->getWidgetSchema()->setLabel($formLabel);
 
           $subForm->embedForm($index, $form);
           // check if existing embedded relations should have a different label
